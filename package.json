@@ -1,0 +1,50 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.11.9",
+    "@testing-library/react": "^11.2.5",
+    "@testing-library/user-event": "^12.8.3",
+    "@uppy/core": "^2.1.4",
+    "@uppy/react": "^2.1.2",
+    "@uppy/thumbnail-generator": "^2.0.6",
+    "antd": "^4.18.2",
+    "axios": "^0.21.1",
+    "react": "^17.0.1",
+    "react-avatar": "^4.0.0",
+    "react-data-table-component": "^7.4.6",
+    "react-dom": "^17.0.1",
+    "react-feather": "^2.0.9",
+    "react-image-lightbox": "^5.1.4",
+    "react-paginate": "^8.1.0",
+    "react-responsive-masonry": "^2.1.4",
+    "react-scripts": "4.0.3",
+    "reactstrap": "^9.0.1",
+    "web-vitals": "^1.1.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
