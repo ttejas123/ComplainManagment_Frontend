@@ -1,13 +1,14 @@
 import ContactForm from "./ContactForm.js";
 import ImageGallery from "./ImageGallary.js";
-import React, {useState, useEffect} from "react";
+import {CSVLink} from 'react-csv'
+import React, {useState, useEffect, forwardRef} from "react";
 import { Card, CardHeader, CardTitle, CardBody, FormGroup, Label, Input, Row, Col, Modal, ModalHeader, ModalBody, Button, ModalFooter, TabContent,
   TabPane,
   Nav,
   NavItem,
   NavLink } from 'reactstrap'
 import ReactPaginate from 'react-paginate'
-import { ChevronDown } from 'react-feather'
+import { ChevronDown, Download, Trash2, Edit } from 'react-feather'
 import DataTable from 'react-data-table-component'
 import axios from 'axios';
 import Avatar from 'react-avatar';
@@ -20,11 +21,22 @@ const Contact=()=>{
 	const [currentPage, setCurrentPage] = useState(0)
 	const [modelData, setModeldata] = useState({})
 	const [active, setActive] = useState('1')
-
+	const [gg, setgg] = useState([])
+	let Data = []
   const toggle = tab => {
     setActive(tab)
   }
-	//get data from fireBase DataBase and store in setContactObject
+
+  const BootstrapCheckbox = forwardRef(({ onClick, ...rest }, ref) => {
+      return (
+        <div className="custom-control custom-checkbox">
+          <input type='checkbox' className='custom-control-input' ref={ref} {...rest} />
+          <label className='custom-control-label' onClick={onClick} />
+        </div>
+      )
+    }
+  )
+	//get data from mongo DataBase and store in setContactObject
 	useEffect(()=>{
 		axios.get("http://localhost:3001/read").then((result)=>{
 			console.log(result.data);
@@ -32,7 +44,7 @@ const Contact=()=>{
  				result.data
 		    )
 		})
-	},[])
+	},[setCurrentId])
 
 	//Store data into firebase, or update data into database
 	const addOrEdit = (obj) =>{
@@ -53,36 +65,32 @@ const Contact=()=>{
 		  })
 		window.location.reload();
 	}
+const headerss = [
+  
+    // Title of the columns (column_names)
+    {key: '_id', label: '_id'},
+    {key: 'url', label: 'url'},
+    {key: 'fullName', label: 'fullName'},
+    {key: 'mobile', label: 'mobile'},
+    {key: 'email', label: 'email'},
+    {key: 'address', label: 'address'}
+  ]
 
-	const data = [
-		{
-			id: 438734583745,
-			full_name: "Tejas Vijay Thakare",
-			email: "tthakre73@gmail.com",
-			age: 36,
-			salary: 326472
-		},
-		{
-			id: 346283427783,
-			full_name: "Vijay Shamrao Thakare",
-			email: "vijaythakare73@gmail.com",
-			age: 26,
-			salary: 388399
-		}
-	]
+const headerssImg = [
+    {key: 'url', label: 'Image'}
+ ]
 
 	const basicColumns = [
 		  {
 		    name: 'ID',
-		    selector: '_id',
+		    selector: row => row._id,
 		    sortable: true,
 		    // maxWidth: '100px'
 		  },
 		  {
 		    name: 'Image',
-		    selector: 'name',
 		    sortable: true,
-			    cell: row => (
+			    selector: row => (
 			      <div className='d-flex align-items-center'>
 			        {row.url == '' ? (
 			           <div className='vertically-centered-modal'>
@@ -111,65 +119,44 @@ const Contact=()=>{
 		  },
 		  {
 		    name: 'Name',
-		    selector: 'fullName',
+		    selector: row => row.fullName,
 		    sortable: true,
 		    // minWidth: '225px'
 		  },
 		  {
 		    name: 'Mobile',
-		    selector: 'mobile',
+		    selector: row => row.mobile,
 		    sortable: true,
 		    // minWidth: '225px'
 		  },
 		  {
 		    name: 'Email',
-		    selector: 'email',
+		    selector: row => row.email,
 		    sortable: true,
 		    // minWidth: '310px'
 		  },
 		  {
 		    name: 'Address',
-		    selector: 'address',
+		    selector: row => row.address,
 		    sortable: true,
 		    // minWidth: '175px'
 		  },
 		  {
 		  	name: 'Action',
-		  	selector: 'AddEdit',
 		  	sortable: false,
-		  	cell: row => (
+		  	selector: row => (
 		  		<>
-			      <a className="btn text-primary" onClick={()=>{setCurrentId(row._id)}}>
-							<i className="fas fa-pencil-alt"/>
+			      <a className="btn px-1" onClick={()=>{setCurrentId(row._id)}}>
+							<Edit size='15' color='black' />
 					  </a>
-					  <a className="btn text-danger" onClick={()=>{onDelete(row._id)}}>
-							<i className="fas fa-trash-alt"/>
+					  <a className="btn px-1" onClick={()=>{onDelete(row._id)}}>
+							<Trash2 size='15' color='red'/>
 					  </a>
 				</>
 			    ) 
 		  }
 		]
 
-	const Datatable = () => {
-		return (
-					<Card>
-					  <CardHeader>
-					  	User Table
-					  </CardHeader>
-				      <DataTable
-				        noHeader
-				        pagination
-				        data={contactObject}
-				        columns={basicColumns}
-				        className='react-dataTable'
-				        sortIcon={<ChevronDown size={10} />}
-				        paginationDefaultPage={currentPage + 1}
-				       
-				        paginationRowsPerPageOptions={[10, 25, 50, 100]}
-				      />
-				    </Card>
-			)
-	}
 	  return (
 	  	<div >
 		  	<div className="jumbotron jumbotron-fluid py-5">
@@ -214,7 +201,39 @@ const Contact=()=>{
 				      </Nav>
 				      <TabContent className='py-50' activeTab={active}>
 				        <TabPane tabId='1'>
-				          <Datatable />
+				          <Card>
+									  <CardHeader className='d-flex justify-content-between'>
+									  	<div>User Table</div> <div>{gg.length > 0 ? (<div className="d-flex justify-content-center align-items-center">
+												<div className='ml-3' ><Download size='15' /><CSVLink className='ml-1' data={gg} headers={headerssImg}>IMG</CSVLink></div>
+												<div className='ml-3'><Download size='15' /><CSVLink className="ml-1" data={gg} headers={headerss}>Export All</CSVLink></div>
+												<div className='ml-5'><Trash2 onClick={()=>{
+									  		const NewData = gg.map((val) => {
+																		return val._id
+																	})
+	
+												axios.post('http://localhost:3001/deleteManyById',{
+												      deleteManyById: NewData,
+												  })
+												window.location.reload();
+									  	}} color='red' size='15' /></div>
+									  	</div>) : (<></>)}</div>
+									  </CardHeader>
+								      <DataTable
+								        noHeader
+								        selectableRows
+								        pagination
+								        striped
+								        onSelectedRowsChange = {(e) => {
+								        	setgg(e.selectedRows)}}
+								        data={contactObject}
+								        columns={basicColumns}
+								        className='react-dataTable'
+								        sortIcon={<ChevronDown size={10} />}
+								       	selectableRowsComponent={BootstrapCheckbox}
+
+								        paginationRowsPerPageOptions={[10, 25, 50, 100]}
+								      />
+								    </Card>
 				        </TabPane>
 				        <TabPane tabId='2'>
 				          <ImageGallery />

@@ -1,13 +1,17 @@
 import React, {useState, useEffect} from "react";
-import { Card, CardHeader, CardTitle, CardBody, FormGroup, Label, Input, Row, Col } from 'reactstrap'
+import { Card, CardHeader, CardTitle, CardBody, FormGroup, Label, Input, Row, Col, Button } from 'reactstrap'
+import Avatar from 'react-avatar';
+import csvToJson from 'convert-csv-to-json';
+import { ChevronDown } from 'react-feather'
 import axios from 'axios';
 import Uppy from '@uppy/core'
 import { DragDrop } from '@uppy/react'
 import thumbnailGenerator from '@uppy/thumbnail-generator'
 import '@uppy/core/dist/style.css'
+import DataTable from 'react-data-table-component'
 import '@uppy/dashboard/dist/style.css'
 import { baseUrl } from '../AllUrls.js'
-
+import './contact.css'
 const ContactForm=(props)=>{
 	//default empty object
 	const initialValues = {
@@ -21,6 +25,8 @@ const ContactForm=(props)=>{
 
 	const [previewArr, setPreviewArr] = useState([])
 	const [fileArr, setFileArr] = useState([])
+	const [CsvFile, setCsvFile] = useState(null);
+	const [PreCsvFile, setPreCsvFile] = useState(null);
 	const uppy = new Uppy({
 	    meta: { type: 'avatar' },
 	    autoProceed: true,
@@ -38,6 +44,20 @@ const ContactForm=(props)=>{
 	    const fileArrs = fileArr
 	    fileArrs[0] = file.data
 	    setFileArr([...fileArrs])
+	  })
+
+		const uppy1 = new Uppy({
+	    meta: { type: 'avatar' },
+	    autoProceed: true,
+	    totalProgress: 0
+	  })
+
+	  uppy1.use(thumbnailGenerator)
+
+	  uppy1.on('thumbnail:generated', (file, preview) => {
+	  	// setPreCsvFile(preview)
+	  	console.log(file)
+	    setCsvFile(file.data)
 	  })
 
 	const renderPreview = () => {
@@ -64,7 +84,6 @@ const ContactForm=(props)=>{
 				})
 				setPreviewArr([`${baseUrl}${result.data.url}`])
 			})
-			console.log(values)
 			
 		}
 	},[props.currentId, props.contactObject]);
@@ -75,6 +94,18 @@ const ContactForm=(props)=>{
 			[name] : value,
 		})
 	}
+
+	// const jsonData = [
+	// 	{
+	// 		Name: "Tejas Thakare",
+	// 		url : "https://localhost:3001/21"
+	// 	},
+	// 	{
+	// 		Name: "Khushboo Yadav",
+	// 		url : "https://localhost:3001/92"
+	// 	}
+	// ]
+
 	//after submiting form this data pass to contact.js to save or update data.
 	const handleFormSubmit = (e)=>{
 		// e.preventDefault()
@@ -97,6 +128,81 @@ const ContactForm=(props)=>{
 			setValues(initialValues);
 		}
 	}
+
+
+	const DataTableAfterSelect = () => {
+		const basicColumns = [
+		  {
+		    name: 'ID',
+		    selector: row => row._id,
+		    sortable: true
+		  },
+		  {
+		    name: 'Image',
+		    sortable: true,
+			    selector: row => (
+			      <div className='d-flex align-items-center'>
+			        {row.url == '' ? (
+			           <div className='vertically-centered-modal'>
+			           		
+			           		<Button >
+			           			<Avatar size="40" round="20px" facebook-id="invalidfacebookusername" src={baseUrl+row.url} />
+					        	</Button>
+					        
+					      </div>
+			        ) : (
+			        	<div className="cursor-pointer">
+			          		<Avatar size="40" round="20px" facebook-id="invalidfacebookusername" src={baseUrl+row.url} />
+			        	</div>
+			        )}
+			      </div>
+			    )
+		    // minWidth: '100px'
+		  },
+		  {
+		    name: 'Name',
+		    selector: row => row.fullName,
+		    sortable: true,
+		    // minWidth: '225px'
+		  },
+		  {
+		    name: 'Mobile',
+		    selector: row => row.mobile,
+		    sortable: true,
+		    // minWidth: '225px'
+		  },
+		  {
+		    name: 'Email',
+		    selector: row => row.email,
+		    sortable: true,
+		    // minWidth: '310px'
+		  },
+		  {
+		    name: 'Address',
+		    selector: row => row.address,
+		    sortable: true,
+		    // minWidth: '175px'
+		  }
+		  ]
+		return (
+					<Card>
+									  <CardHeader className='d-flex justify-content-between'>
+									  	<div>User Table</div> 
+									  </CardHeader>
+								      <DataTable
+								        noHeader
+								        selectableRows
+								        pagination
+								        striped
+								        data={[]}
+								        columns={[]}
+								        className='react-dataTable'
+								        sortIcon={<ChevronDown size={10} />}
+								        paginationRowsPerPageOptions={[10, 25, 50, 100]}
+								      />
+				</Card>
+			)
+	} 
 
 	  return (
 	  	<>
@@ -145,17 +251,39 @@ const ContactForm=(props)=>{
 			  			 onChange={handleInputeChange} />
 	  		</div>
 	
-          	<div>
+          <div className='mb-3'>
           		<div className='border'>
             		<DragDrop uppy={uppy} />
      					</div>
      					{renderPreview()}
-          	</div>          
+          </div>          
 			      
-	  		<div className="form-group">
+	  		<div className="form-group mb-3">
 	  			<input type="submit" value ="Save" className="btn btn-primary btn-block"/>
 	  		</div>
 	  	</form>
+	  		<div class="mb-4">
+            <hr data-content="Import CSV" class="hr-text" />
+        </div>
+      <div className='mb-3'>
+          		 
+					    <FormGroup>
+              	<Label for='inputFile'>Bulk Upload</Label>
+              	<Input type='file' onChange={(e) => {
+					    				setPreCsvFile(e.target.files[0])
+					        }} id='inputFile' name='fileInpur' />
+
+            	</FormGroup>
+     					<div className="form-group mb-3">
+				  			<input type="submit" value ="Import" onClick={()=> {
+				  					console.log(PreCsvFile)
+				  					const data = new FormData() 
+								    data.append('csvFile', PreCsvFile)
+				  					axios.post(`http://localhost:3001/csvFile`, data)
+				  					window.location.reload();
+				  			}} className="btn btn-primary btn-block"/>
+				  		</div>
+      </div>
 	  	</>
 	  	);
 }
